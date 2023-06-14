@@ -17,7 +17,7 @@ Run this command on your local machine:
 Open http://localhost:8080 in a browser. Port forwarding successful.
 ```
 # Steps
-1. ```sbatch <file.sh>``` (on server side)
+1. ```sbatch <file.sh>``` or  ```./vscode``` (on server side)
 2. ```ssh -L <port>:localhost:<port> -N root@217.160.147.188``` (on local machine; check ```host.log``` for actual SSH command.)
 3. Open http://localhost:port in a browser
 
