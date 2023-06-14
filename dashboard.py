@@ -50,7 +50,9 @@ def get_title(url):
 def get_urls():
 
     output = subprocess.getoutput("netstat -lnt | awk 'NR>2{print $4}' | grep -E '127.0.0.1:' | sed 's/.*://' | sort -n | uniq")
-
+    if output == '':
+        dictionary={"Date":[], "SSH Command":[], "URLs":[]}
+        return pd.DataFrame(dictionary) 
     ports = [i for i in output.split('\n') if i not in ['22', '80']]
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes,ports), reverse=True)]
@@ -74,7 +76,9 @@ def get_urls():
 def get_public_urls():
     
     output = subprocess.getoutput("netstat -lnt | awk 'NR>2{print $4}' | grep -E '0.0.0.0:' | sed 's/.*://' | sort -n | uniq")
-
+    if output == '':
+        dictionary={"Date":[], "URLs":[]}
+        return pd.DataFrame(dictionary) 
     ports = [i for i in output.split('\n') if i not in ['22', '80']]
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes,ports), reverse=True)]
