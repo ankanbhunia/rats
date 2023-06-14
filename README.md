@@ -5,9 +5,10 @@
 3. ```sbatch <file.sh>``` -> run vscode using sbatch. 
 4. ```bash sbatch-autoconnect <file.sh>``` -> automatically reconnects vscode instance.
 5. ```./host 8080``` -> port forwarding on port 8080
-6. ```./host --login``` -> login to save public key of your local machine to the server.
-7. ```./host --active``` -> shows active ports on the server
-8. ```./host --history``` -> echo $host.log
+6. ```./host.public 8080``` -> share port 8080 publicly (not recommended)
+7. ```./host --login``` -> login to save public key of your local machine to the server.
+8. ```./host --active``` -> shows active ports on the server
+9. ```./host --history``` -> echo $host.log
 
 Check ```host.log``` or slurm log file for SSH command. The output should look like following
 ```bash
