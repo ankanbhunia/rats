@@ -18,5 +18,5 @@ else
   else
     ./host $PORT
   fi
-
+fi
 
