@@ -1,0 +1,87 @@
+#!/bin/bash
+trap 'exit' INT
+server_name=root@217.160.147.188
+if [[ $1 == "--help" ]]; then
+  # Display help information
+  echo "Usage: host <local_port> <remote_port (optional)>"
+  echo "Options:"
+  echo "host --login    login for the first time"
+  echo "host --help    Display this help information"
+  echo "host --history      Display all previous urls"
+  echo "host --active     Display all active urls"
+  exit 0
+fi
+
+if [[ $1 == "--login" ]]; then
+  path=~/.ssh/id_rsa.pub
+  if test -f "$path"; then
+    ssh-copy-id -i ~/.ssh/id_rsa.pub $server_name
+    exit 0
+  else
+    ssh-keygen -t rsa -f ~/.ssh/id_rsa
+    ssh-copy-id -i ~/.ssh/id_rsa.pub root@217.160.147.188
+    exit 0
+  fi
+fi
+
+if [[ $1 == "--history" ]]; then
+  # Display help information
+  echo "$(<host.log )"
+  exit 0
+fi
+if [[ $1 == "--active" ]]; then
+  # Display help information
+  active_ports=$(ssh -n $server_name netstat -lnt | awk 'NR>2{print $4}' | 
+grep -E ':' | sed 's/.*://' | sort -n | uniq)
+  active_ports=($active_ports)
+  for item in "${active_ports[@]}"; do
+    if [[ ! $item == "22" ]]; then
+      echo "$server_name:$item"
+    fi
+  done
+  exit 0
+fi
+if [[ ! -n "$1" ]]; then
+  echo Error: Port not provided
+  echo "Usage: host <local_port> <remote_port (optional)>"
+  echo "Options:"
+  echo "host --login    login for the first time"
+  echo "host --help    Display this help information"
+  echo "host --history      Display all previous urls"
+  echo "host --active     Display all active urls"
+  exit 0
+  exit 0
+fi
+if [[ ! $1 =~ ^[0-9]+$ ]]; then
+  echo Error: Invalid port
+  exit 0
+fi
+echo "Sharing port $1 press Ctrl+Z to exit"
+date_time=$(date +"%Y-%m-%d %H:%M:%S")
+# Create or open the file
+file=host.log
+if [ ! -f $file ]; then
+  touch $file
+fi
+if [ -n "$2" ]; then
+  # The second argument is passed, so use it
+  value=$2
+else
+  # The second argument is not passed, so generate a random number
+  value=$((RANDOM % 1000 + 7000))
+fi
+for i in {1..3}; do
+  if [[ $? == 130 ]]; then
+    echo Stopped.
+    exit 0
+  fi
+  echo "Run this command on your local machine:"
+  echo "    ssh -L $value:localhost:$value -N $server_name"
+  echo "Open http://localhost:$value in a browser. Port forwarding successful."
+  echo "$date_time: $1 --> ssh -L $value:localhost:$value -N $server_name" >> $file
+  ssh -R  "$value":localhost:"$1" -N  -o ExitOnForwardFailure=yes $server_name
+  echo Error: Port forwarding unsuccessful. Retrying with a different port.
+  value=$((RANDOM % 1000 + 7000))
+  sed '$d' $file > temp.txt
+  mv temp.txt $file
+done

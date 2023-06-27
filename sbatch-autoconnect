@@ -1,0 +1,25 @@
+ftaw() {
+  local file=$1
+  local word=$2
+
+  # Read the file line by line.
+  while read -r line; do
+    # Check if the current line contains the word.
+    if [[ $line =~ $word ]]; then
+      # If it does, print the text after the word.
+      echo "${line##*"$word"}"
+    fi
+  done < "$file"
+}
+mkdir -p tmp/
+tmp_file="tmp/"$1
+sed '/^$/d' $1 > $tmp_file
+sed -i '$ d' $tmp_file
+time_input=$(ftaw 1gpu.sh --time=)
+time_input=${time_input//-/:}
+wait=$(echo $time_input | awk -F':' '{print ($1 * 86400) + ($2 * 3600) + ($3 * 60) + $4}')
+wait=$((wait-10))
+echo "sleep $wait && sbatch $tmp_file &" >> $tmp_file
+echo "./vscode" >> $tmp_file
+echo $tmp_file
+sbatch $tmp_file
