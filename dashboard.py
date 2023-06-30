@@ -135,7 +135,7 @@ def display_page(relative_pathname):
             id="modal-centered",
             centered=True,
             is_open=True,
-            size="lg",
+            size="xl",
         ),
         
     ]
