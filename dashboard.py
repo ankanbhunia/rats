@@ -50,10 +50,20 @@ def get_title(url):
 def get_urls():
 
     output = subprocess.getoutput("netstat -lnt | awk 'NR>2{print $4}' | grep -E '127.0.0.1:' | sed 's/.*://' | sort -n | uniq")
+
+
     if output == '':
-        dictionary={"Date":[], "SSH Command":[], "URLs":[]}
+        dictionary={"Date":[], "SSH Command":[], "Hosts":[],"URLs":[]}
         return pd.DataFrame(dictionary) 
-    ports = [i for i in output.split('\n') if i not in ['22', '80']]
+        
+    l = subprocess.getoutput("lsof -iTCP  | grep ' 10u ' | grep LISTEN | grep IPv4 | awk '{print $2,$9}'")
+    l2 = {i.split(' ')[0]:i.split(' ')[-1].split(':')[-1] for i in l.split('\n')}
+    h = subprocess.getoutput("lsof -iTCP  | grep ' 3u ' | grep ESTABLISHED | grep IPv4 | awk '{print $2,$9}'")
+    h2 = {i.split(' ')[0]:i.split('->')[-1].split(':')[0] for i in h.split('\n')}
+    g = {l2[i]:h2[i] for i in l2}
+    
+    ports = [i for i in output.split('\n') if i not in ['22', '8000']]
+    hosts = [g[i] for i in ports]
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes,ports), reverse=True)]
 
@@ -66,9 +76,10 @@ def get_urls():
 
     #title=[get_title(i) for i in urls]
     sshs=['ssh -L '+i+':localhost:'+i+' -N root@217.160.147.188' for i in ports]
+    
     ips=[html.A(html.P(i),href=i) for i in urls]
 
-    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)],"SSH Command":sshs, "URLs":ips}
+    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)],"SSH Command":sshs, "Hosts":hosts, "URLs":ips}
     df=pd.DataFrame(dictionary)
 
     return df
@@ -79,7 +90,7 @@ def get_public_urls():
     if output == '':
         dictionary={"Date":[], "URLs":[]}
         return pd.DataFrame(dictionary) 
-    ports = [i for i in output.split('\n') if i not in ['22', '80']]
+    ports = [i for i in output.split('\n') if i not in ['22', '8000']]
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes,ports), reverse=True)]
 
@@ -123,4 +134,4 @@ def display_page(relative_pathname):
 )
 
 if __name__ == '__main__':
-    app.run_server('0.0.0.0', 80)
+    app.run_server('0.0.0.0', 8000)
