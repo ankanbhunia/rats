@@ -4,19 +4,20 @@
 #./vscode 7080 --> specify forwarding port
 #./vscode --public --> run vscode in a public URL. 
 
+CURPATH="$(dirname "$0")"
 PORT=$(($RANDOM%1000+7000))
-VSCODE_IPC_HOOK_CLI= code-server*/bin/code-server --config config.yaml --user-data-dir vscode-user-dir  --extensions-dir vscode-extensions_dir  --bind-addr 127.0.0.1:$PORT >> /dev/null 2>&1 &
+VSCODE_IPC_HOOK_CLI= $CURPATH/code-server*/bin/code-server --config config.yaml --user-data-dir vscode-user-dir  --extensions-dir vscode-extensions_dir  --bind-addr 127.0.0.1:$PORT >> /dev/null 2>&1 &
 if [[ $1 == "--public" ]]; then
   if [ -n "$2" ]; then
-    ./host.public $PORT $2
+    $CURPATH/host.public $PORT $2
   else
-    ./host.public $PORT
+    $CURPATH/host.public $PORT
   fi
 else
   if [ -n "$1" ]; then
-    ./host $PORT $1
+    $CURPATH/host $PORT $1
   else
-    ./host $PORT
+    $CURPATH/host $PORT
   fi
 fi
 
