@@ -2,9 +2,9 @@
 
 ```bash
 CODE_SERVER_VERSION=4.14.1
-git clone https://github.com/ankanbhunia/vscode-remote
-cd vscode-remote
-chmod +x vscode host host.public
+git clone https://github.com/ankanbhunia/rats
+cd rats
+chmod +x vscode host host.public ftp
 curl -fL https://github.com/coder/code-server/releases/download/v$CODE_SERVER_VERSION/code-server-$CODE_SERVER_VERSION-linux-amd64.tar.gz > code-server.tar.gz
 tar -xvf code-server.tar.gz
 ```
@@ -12,9 +12,9 @@ tar -xvf code-server.tar.gz
 
 ```bash
 CODE_SERVER_VERSION=4.14.1
-git clone https://github.com/ankanbhunia/vscode-remote
-cd vscode-remote
-chmod +x vscode host host.public
+git clone https://github.com/ankanbhunia/rats
+cd rats
+chmod +x vscode host host.public ftp
 curl -fL https://github.com/coder/code-server/releases/download/v$CODE_SERVER_VERSION/code-server-$CODE_SERVER_VERSION-macos-amd64.tar.gz > code-server.tar.gz
 tar -xvf code-server.tar.gz
 ```
