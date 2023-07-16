@@ -1,0 +1,16 @@
+CURPATH="$(dirname "$0")"
+PORT=$(($RANDOM%1000+7000))
+python -m http.server $PORT  >> /dev/null 2>&1 & 
+if [[ $1 == "--public" ]]; then
+  if [ -n "$2" ]; then
+    $CURPATH/host.public $PORT $2
+  else
+    $CURPATH/host.public $PORT
+  fi
+else
+  if [ -n "$1" ]; then
+    $CURPATH/host $PORT $1
+  else
+    $CURPATH/host $PORT
+  fi
+fi
