@@ -1,2 +1,1 @@
-ps ax | grep code-server | awk '{print $1}' | xargs kill -9
-ps ax | grep host | awk '{print $1}' | xargs kill -9
+ps ax | grep "code-server\|host"  | awk '{print $1}' | xargs kill -9
