@@ -1,6 +1,6 @@
 #!/bin/bash
 trap 'exit' INT
-server_name=$(.server_host)
+server_name=$(<server_name.txt)
 if [[ $1 == "--help" ]]; then
   # Display help information
   echo "Usage: host <local_port> <remote_port (optional)>"
