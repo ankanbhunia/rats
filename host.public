@@ -1,6 +1,6 @@
 #!/bin/bash
 trap 'exit' INT
-server_name=$(.server_host)
+server_name=$(<server_name.txt)
 ip_address=$(echo $server_name | cut -d "@" -f 2)
 if [[ $1 == "--help" ]]; then
   # Display help information
