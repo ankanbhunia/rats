@@ -1,6 +1,6 @@
 #!/bin/bash
 trap 'exit' INT
-server_name=root@217.160.147.188
+server_name=$(.server_host)
 ip_address=$(echo $server_name | cut -d "@" -f 2)
 if [[ $1 == "--help" ]]; then
   # Display help information
@@ -19,7 +19,7 @@ if [[ $1 == "--login" ]]; then
     exit 0
   else
     ssh-keygen -t rsa -f ~/.ssh/id_rsa
-    ssh-copy-id -i ~/.ssh/id_rsa.pub root@217.160.147.188
+    ssh-copy-id -i ~/.ssh/id_rsa.pub $server_name
     exit 0
   fi
 fi
