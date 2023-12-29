@@ -5,10 +5,18 @@ import pandas as pd
 import subprocess, psutil, datetime
 import requests
 from bs4 import BeautifulSoup
-from flask import Flask
+import re
 
 SERVER_IP = '217.160.147.188'
 HOST_USERNAME = 'root'
+
+def extract_ip(pid):
+    out = subprocess.getoutput("netstat -lntpa | grep "+pid+" | grep ESTABLISHED")
+    out = [j for j in [re.findall(r'\b(?:\d{1,3}\.){3}\d{1,3}:\d+\b', i) for i in out.split('\n')] if j[0].endswith(':22')]
+    if len(out) > 0:
+        return out[0][1].split(':')[0]
+    else:
+        return '0.0.0.0'
 
 def get_time_info(timestamp):
 
@@ -60,12 +68,8 @@ def get_urls():
     port2pid = {i:j for i,j in port2pid.items() if int(i)<20000}
     ports = [i for i in port2pid.keys() ]
 
-    server_ips = [subprocess.getoutput("netstat -lntpa | grep "+pid+" | grep ESTABLISHED | awk '{print $5}'") for pid in port2pid.values()]
-    server_ips = [[j.split(':')[0] for j in i.split('\n') if j.split(':')[0] not in ['0.0.0.0','127.0.0.1']][0] for i in server_ips]
-    server_ips = [get_dns_addr(ip_address) for ip_address in server_ips]
-
-    host_dict = {port_i:ip_i for ip_i, port_i in zip(server_ips, ports)}
-    
+    server_ips = [get_dns_addr(extract_ip(pid)) for pid in port2pid.values()]
+    host_dict = {port_i:ip_i for ip_i, port_i in zip(server_ips, ports)}    
 
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes, ports), reverse=True)]
@@ -99,10 +103,7 @@ def get_public_urls():
 
     ports = [i for i in port2pid.keys()]
 
-    server_ips = [subprocess.getoutput("netstat -lntpa | grep "+pid+" | grep ESTABLISHED | awk '{print $5}'") for pid in port2pid.values()]
-    server_ips = [[j.split(':')[0] for j in i.split('\n') if j.split(':')[0] not in ['0.0.0.0','127.0.0.1']][0] for i in server_ips]
-    server_ips = [get_dns_addr(ip_address) for ip_address in server_ips]
-
+    server_ips = [get_dns_addr(extract_ip(pid)) for pid in port2pid.values()]
     host_dict = {port_i:ip_i for ip_i, port_i in zip(server_ips, ports)}
     
 
@@ -170,6 +171,9 @@ def get_html_():
     """
     return html_template
 
+
+
+from flask import Flask
 kk =  get_urls()
 app = Flask(__name__)
 
@@ -179,3 +183,7 @@ def index():
 
 if __name__ == '__main__':
     app.run('0.0.0.0', 8000)
+# if __name__ == '__main__':
+#     run_server()
+
+
