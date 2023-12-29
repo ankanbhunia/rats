@@ -9,6 +9,27 @@ import re
 
 SERVER_IP = '217.160.147.188'
 HOST_USERNAME = 'root'
+import requests, time
+from bs4 import BeautifulSoup
+
+def get_webapp_title(url):
+    try:
+        # Make an HTTP GET request to the provided URL
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an exception for bad responses (4xx and 5xx)
+
+        # Parse the HTML content of the page
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract the title tag content
+        title_tag = soup.find('title')
+        if title_tag:
+            return title_tag.text.strip()  # Return the stripped text of the title
+        else:
+            return "Title not found on the web page."
+
+    except requests.exceptions.RequestException as e:
+        return f"Error: {e}"
 
 def extract_ip(pid):
     out = subprocess.getoutput("netstat -lntpa | grep "+pid+" | grep ESTABLISHED")
@@ -74,6 +95,7 @@ def get_urls():
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes, ports), reverse=True)]
     hosts = [host_dict[i] for i in ports]
+    titles = [get_webapp_title(f'http://localhost:{i}') for i in ports]
 
     if output != '':    
         urls = ['http://localhost:'+i for i in ports]
@@ -84,7 +106,7 @@ def get_urls():
     
     ips=[i for i in urls]
 
-    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)],"SSH Command":sshs, "Host":hosts, "URLs":ips}
+    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)], "Name":titles, "SSH Command":sshs, "Host":hosts, "URLs":ips}
     df=pd.DataFrame(dictionary)
 
     return df
@@ -110,6 +132,7 @@ def get_public_urls():
     datetimes  = [psutil.Process(int(subprocess.getoutput('fuser '+str(i)+'/tcp').split(' ')[-1])).create_time() for i in ports]
     ports = [j for i,j in sorted(zip(datetimes, ports), reverse=True)]
     hosts = [host_dict[i] for i in ports]
+    titles = [get_webapp_title(f'http://localhost:{i}') for i in ports]
 
     if output != '':    
         urls = ['http://'+SERVER_IP+':'+i for i in ports]
@@ -121,7 +144,7 @@ def get_public_urls():
     
     ips=[i for i in urls]
 
-    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)], "SSH Command":sshs, "Host":hosts,"URLs":ips}
+    dictionary={"Date":[get_time_info(int(i))for i in sorted(datetimes, reverse=True)],  "Name":titles,"SSH Command":sshs, "Host":hosts,"URLs":ips}
     df=pd.DataFrame(dictionary)
 
     return df
